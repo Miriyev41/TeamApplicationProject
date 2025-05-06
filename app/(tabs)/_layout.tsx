@@ -1,43 +1,49 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+    <Tabs>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="home" size={size} color={color} />
+          ),
+          // Customize the top header bar (for the "Home" tab)
+          headerStyle: {
+            backgroundColor: '#0288D1', // Change to your desired top bar color
+          },
+          headerTintColor: '#ffffff', // Text color in the header (white in this case)
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="history"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'History',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="history" size={size} color={color} />
+          ),
+          // Customize the top header bar (for the "History" tab)
+          headerStyle: {
+            backgroundColor: '#0288D1', // Change to your desired top bar color
+          },
+          headerTintColor: '#ffffff', // Text color in the header (white in this case)
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="settings" size={size} color={color} />
+          ),
+          // Customize the top header bar (for the "Settings" tab)
+          headerStyle: {
+            backgroundColor: '#0288D1', // Change to your desired top bar color
+          },
+          headerTintColor: '#ffffff', // Text color in the header (white in this case)
         }}
       />
     </Tabs>
