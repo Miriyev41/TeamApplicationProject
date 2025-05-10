@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }: any) => {
   const [dailyGoal, setDailyGoal] = useState<number | null>(null);
   const [currentIntake, setCurrentIntake] = useState<number>(0); // Track the water the user has consumed
   const [remainingWater, setRemainingWater] = useState<number>(0); // Track remaining water
@@ -46,6 +46,13 @@ const HomeScreen = () => {
         duration: 500,
         useNativeDriver: false,
       }).start();
+
+      // Save current intake and remaining water in AsyncStorage
+      AsyncStorage.setItem('currentIntake', newIntake.toString())
+        .catch((error) => console.error("Failed to save current intake", error));
+
+      AsyncStorage.setItem('remainingWater', newRemaining.toString())
+        .catch((error) => console.error("Failed to save remaining water", error));
     }
   };
 
@@ -70,17 +77,11 @@ const HomeScreen = () => {
       style={styles.background} // Full screen background
       resizeMode="cover"
     >
-      {/* Full screen background now covers the entire screen */}
       <View style={styles.container}>
-        {/* Current Date Display */}
         <Text style={styles.dateText}>{currentDate}</Text>
-
-        {/* Title Section */}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Water Reminder</Text>
         </View>
-
-        {/* Motivational Message */}
         <Text style={styles.motivationalText}>{getMotivationalMessage()}</Text>
 
         {dailyGoal !== null ? (
@@ -94,22 +95,17 @@ const HomeScreen = () => {
                 : "You've reached your daily goal!"}
             </Text>
 
-            {/* Progress bar */}
             <View style={styles.progressBarContainer}>
               <Animated.View
-                style={[
-                  styles.progressBar,
-                  {
-                    width: progressBarWidth.interpolate({
-                      inputRange: [0, 100],
-                      outputRange: ['0%', '100%'],
-                    }),
-                  },
-                ]}
+                style={[styles.progressBar, {
+                  width: progressBarWidth.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ['0%', '100%'],
+                  }),
+                }]}
               />
             </View>
 
-            {/* Buttons to add water */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.button}
@@ -136,9 +132,9 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   background: {
-    flex: 1, // Full screen background
-    justifyContent: 'flex-start', // Start from the top of the screen
-    alignItems: 'center', // Center horizontally
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   container: {
     flex: 1,
@@ -149,13 +145,13 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   titleContainer: {
-    marginTop: 40, // Add some margin to push the title down
+    marginTop: 40,
     alignItems: 'center',
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#1E88E5', // Blue color for the title
+    color: '#1E88E5',
     marginBottom: 20,
   },
   dateText: {
@@ -164,14 +160,14 @@ const styles = StyleSheet.create({
     right: 20,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0288D1', // Blue color for date
+    color: '#0288D1',
     textAlign: 'right',
   },
   motivationalText: {
     fontSize: 20,
     fontWeight: '500',
     fontStyle: 'italic',
-    color: '#4CAF50', // Green text for motivation
+    color: '#4CAF50',
     textAlign: 'center',
     marginBottom: 30,
     paddingHorizontal: 20,
@@ -179,7 +175,7 @@ const styles = StyleSheet.create({
   waterIntakeContainer: {
     marginBottom: 30,
     padding: 25,
-    backgroundColor: '#7FFFD4', // Light blue to match Settings design
+    backgroundColor: '#7FFFD4',
     borderRadius: 15,
     width: '100%',
     alignItems: 'center',
@@ -191,7 +187,7 @@ const styles = StyleSheet.create({
   intakeText: {
     fontSize: 20,
     marginBottom: 15,
-    color: '#0277BD', // Dark blue color for intake info
+    color: '#0277BD',
   },
   remainingText: {
     fontSize: 18,
@@ -208,7 +204,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#4CAF50', // Green color for the progress bar
+    backgroundColor: '#4CAF50',
     borderRadius: 10,
   },
   buttonContainer: {
@@ -217,13 +213,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   button: {
-    backgroundColor: '#1E88E5', // Blue color for buttons
+    backgroundColor: '#1E88E5',
     padding: 15,
     borderRadius: 10,
     width: '40%',
     alignItems: 'center',
     marginBottom: 15,
-    elevation: 3, // Add elevation for a shadow effect
+    elevation: 3,
   },
   buttonText: {
     color: 'white',
