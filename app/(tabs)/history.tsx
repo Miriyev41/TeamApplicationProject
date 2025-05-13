@@ -1,56 +1,59 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const screenWidth = Dimensions.get("window").width;
 
 export default function WaterHistorySection() {
   const [activeTab, setActiveTab] = useState("DAY");
-  const [currentIntake, setCurrentIntake] = useState(0); // Store total intake from Home
+  const [currentIntake, setCurrentIntake] = useState(0);
+  const [dailyGoal, setDailyGoal] = useState(2433); // default, in case nothing is stored
 
   useEffect(() => {
-    // Fetch the total water consumed from AsyncStorage
-    const fetchWaterData = async () => {
+    const fetchData = async () => {
       try {
-        const storedIntake = await AsyncStorage.getItem('currentIntake');
+        const storedIntake = await AsyncStorage.getItem("currentIntake");
+        const storedGoal = await AsyncStorage.getItem("dailyGoal");
+
         if (storedIntake !== null) {
-          setCurrentIntake(parseFloat(storedIntake)); // Set the total intake from Home
+          setCurrentIntake(parseFloat(storedIntake));
+        }
+        if (storedGoal !== null) {
+          setDailyGoal(parseFloat(storedGoal));
         }
       } catch (error) {
-        console.error("Failed to fetch water intake data", error);
+        console.error("Failed to fetch data", error);
       }
     };
 
-    fetchWaterData();
+    fetchData();
   }, []);
 
-  // Dynamic calculation of targetLeft based on currentIntake for each tab
   const dataByTab = {
     DAY: {
       labels: Array.from({ length: 25 }, (_, i) => i.toString()),
       data: [200, 0, 150, 0, 0, 300, 0, 0, 100, 0, 0, 200, 0, 100, 0, 0, 0, 300, 0, 0, 0, 100, 0, 0, 0],
-      total: currentIntake, // Set the total consumed water
-      targetLeft: 2433 - currentIntake, // Remaining to target for the day
+      total: currentIntake,
+      targetLeft: Math.max(0, dailyGoal - currentIntake),
     },
     WEEK: {
       labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       data: [2000, 1800, 1500, 2200, 1900, 1600, 2100],
-      total: currentIntake, // Set the total consumed water
-      targetLeft: 0, // You can adjust this logic for weekly goals
+      total: currentIntake,
+      targetLeft: Math.max(0, dailyGoal * 7 - currentIntake),
     },
     MONTH: {
       labels: Array.from({ length: 10 }, (_, i) => `Day ${i + 1}`),
       data: [1800, 1900, 1700, 2000, 1800, 1900, 1700, 2000, 1800, 1900],
-      total: currentIntake, // Set the total consumed water
-      targetLeft: 0, // Adjust for monthly goals
+      total: currentIntake,
+      targetLeft: Math.max(0, dailyGoal * 30 - currentIntake),
     },
     YEAR: {
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
       data: [50000, 45000, 48000, 52000, 49000, 47000],
-      total: currentIntake, // Set the total consumed water
-      targetLeft: 0, // Adjust for yearly goals
+      total: currentIntake,
+      targetLeft: Math.max(0, dailyGoal * 365 - currentIntake),
     },
   };
 
@@ -63,7 +66,6 @@ export default function WaterHistorySection() {
     useShadowColorFromDataset: false,
   };
 
-  // Get the current data based on the active tab
   const currentData = dataByTab[activeTab];
 
   return (
