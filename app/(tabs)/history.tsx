@@ -1,13 +1,13 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import {
-  View,
+  Dimensions,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Dimensions,
+  View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -179,7 +179,7 @@ export default function WaterHistorySection() {
             color: "#1e40af",
           }}
         >
-          {activeTab === "DAY" ? "Today" : `${activeTab} Overview`}
+          {activeTab === "DAY" ? "Today" : `${activeTab}`}
         </Text>
 
         <View
