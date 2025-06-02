@@ -41,18 +41,33 @@ export default function WaterHistorySection() {
     fetchData();
   }, []);
 
+  const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+
   const dayTimes = Array.from({ length: 8 }, (_, i) => {
     const hour = i * 3;
     return hour < 10 ? `0${hour}:00` : `${hour}:00`;
   });
 
-  const last5Days = Array.from({ length: 5 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (5 - i));
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    return `${day}/${month}`;
+  const weekLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weekData = Array.from({ length: 7 }, () =>
+    Math.floor(Math.random() * (2700 - 1800 + 1)) + 1800
+  );
+
+  const monthLabels = Array.from({ length: 30 }, (_, i) => {
+    const day = i + 1;
+    return day % 5 === 0 ? `${day}` : "";
   });
+  const monthData = Array.from({ length: 30 }, () =>
+    Math.floor(Math.random() * (2500 - 1600 + 1)) + 1600
+  );
+
+  const yearLabels = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  const yearData = Array.from({ length: 12 }, () =>
+    Math.floor(Math.random() * (75000 - 60000 + 1)) + 60000
+  );
 
   const dataByTab: Record<TabType, TabData> = {
     DAY: {
@@ -62,22 +77,22 @@ export default function WaterHistorySection() {
       targetLeft: Math.max(0, dailyGoal - currentIntake),
     },
     WEEK: {
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      data: [0, 0, 0, 0, 0, 0, 0],
-      total: currentIntake,
-      targetLeft: Math.max(0, dailyGoal * 7 - currentIntake),
+      labels: weekLabels,
+      data: weekData,
+      total: sum(weekData),
+      targetLeft: Math.max(0, dailyGoal * 7 - sum(weekData)),
     },
     MONTH: {
-      labels: last5Days,
-      data: [0, 0, 0, 0, 0],
-      total: currentIntake,
-      targetLeft: Math.max(0, dailyGoal * 30 - currentIntake),
+      labels: monthLabels,
+      data: monthData,
+      total: sum(monthData),
+      targetLeft: Math.max(0, dailyGoal * 30 - sum(monthData)),
     },
     YEAR: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      data: [0, 0, 0, 0, 0, 0],
-      total: currentIntake,
-      targetLeft: Math.max(0, dailyGoal * 365 - currentIntake),
+      labels: yearLabels,
+      data: yearData,
+      total: sum(yearData),
+      targetLeft: Math.max(0, dailyGoal * 365 - sum(yearData)),
     },
   };
 
@@ -160,7 +175,7 @@ export default function WaterHistorySection() {
 
       <View
         style={{
-          backgroundColor: "#e6edff", 
+          backgroundColor: "#e6edff",
           borderRadius: 24,
           padding: 24,
           marginBottom: 30,
@@ -179,17 +194,15 @@ export default function WaterHistorySection() {
             color: "#1e40af",
           }}
         >
-          {
-  activeTab === "DAY"
-    ? "Today"
-    : activeTab === "WEEK"
-    ? "Weekly Overview"
-    : activeTab === "MONTH"
-    ? "Monthly Overview"
-    : activeTab === "YEAR"
-    ? "Yearly Overview"
-    : `${activeTab} Overview`
-}
+          {activeTab === "DAY"
+            ? "Today"
+            : activeTab === "WEEK"
+            ? "Weekly Overview"
+            : activeTab === "MONTH"
+            ? "Monthly Overview"
+            : activeTab === "YEAR"
+            ? "Yearly Overview"
+            : `${activeTab} Overview`}
         </Text>
 
         <View
@@ -201,11 +214,13 @@ export default function WaterHistorySection() {
         >
           <Text style={{ fontSize: 18, fontWeight: "600", color: "#1f2937" }}>
             Total:{" "}
-            <Text style={{ color: "#2563eb" }}>{currentData.total} ml</Text>
+            <Text style={{ color: "#2563eb" }}>{currentData.total} L</Text>
           </Text>
           <Text style={{ fontSize: 18, fontWeight: "600", color: "#1f2937" }}>
             Target Left:{" "}
-            <Text style={{ color: "#ef4444" }}>{currentData.targetLeft} ml</Text>
+            <Text style={{ color: "#ef4444" }}>
+              {currentData.targetLeft} L
+            </Text>
           </Text>
         </View>
 
