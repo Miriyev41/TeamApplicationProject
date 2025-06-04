@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# WaterReminder & Team Application Project
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native app built with [Expo](https://expo.dev) that helps you track your daily water intake, manage hydration goals, collect user feedback, and configure general settings like volume and weight units — all with persistent local storage.
 
-## Get started
+---
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- Submit multi-line user feedback with validation.
+- Choose measurement units (`ml`, `litres`) and weight units (`kg`, `lbs`) via modals.
+- Calculate daily water intake and track hydration goals.
+- View hydration history summarized by week, month, and year.
+- Save user preferences and data locally using AsyncStorage.
+- Lightweight, user-friendly interface designed for Expo Go.
+- File-based routing inside the `app` directory for smooth navigation.
+- History tab with detailed water intake stats (`app/(tabs)/history.tsx`).
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Getting Started with Expo
 
-In the output, you'll find options to open the app in a
+### Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [Node.js](https://nodejs.org/)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- Expo Go app installed on your Android device
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Installation
 
-## Get a fresh project
+1. Clone the repository:
+   git clone https://github.com/Miriyev41/TeamApplicationProject-64523_64287_66258-.git
+   cd TeamApplicationProject-64523_64287_66258-
+Install dependencies:
 
-When you're ready, run:
+npm install
+# or
+yarn install
+Start the app:
 
-```bash
-npm run reset-project
-```
+npx expo start
+Running the App
+After starting the app, you can open it in:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+A development build
 
-## Learn more
+Project Structure
+All main app code is located inside the app directory.
 
-To learn more about developing your project with Expo, look at the following resources:
+Navigation uses file-based routing.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Key feature files:
 
-## Join the community
+app/(tabs)/history.tsx — History tab with hydration statistics.
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
