@@ -171,7 +171,7 @@ export default function WaterHistorySection() {
           shadowOffset: { width: 0, height: 8 },
         }}
       >
-        <Text
+            <Text
           style={{
             fontSize: 22,
             fontWeight: "700",
@@ -179,7 +179,15 @@ export default function WaterHistorySection() {
             color: "#1e40af",
           }}
         >
-          {activeTab === "DAY" ? "Today" : `${activeTab} Overview`}
+          {activeTab === "DAY"
+            ? "Today"
+            : activeTab === "WEEK"
+            ? "Weekly Overview"
+            : activeTab === "MONTH"
+            ? "Monthly Overview"
+            : activeTab === "YEAR"
+            ? "Yearly Overview"
+            : `${activeTab} Overview`}
         </Text>
 
         <View
