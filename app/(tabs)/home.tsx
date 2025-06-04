@@ -9,20 +9,23 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 type HomeScreenProps = {
   navigation: any;
 };
 
+const MS_IN_HOUR = 1000 * 60 * 60;
+const MS_IN_MINUTE = 1000 * 60;
+
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const [dailyGoal, setDailyGoal] = useState<number | null>(null); 
-  const [currentIntake, setCurrentIntake] = useState<number>(0);
-  const [remainingWater, setRemainingWater] = useState<number>(0);
+  const [dailyGoal, setDailyGoal] = useState<number | null>(null);
+  const [currentIntake, setCurrentIntake] = useState(0);
+  const [remainingWater, setRemainingWater] = useState(0);
   const [progressBarWidth] = useState(new Animated.Value(0));
-  const [currentDate, setCurrentDate] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<string>('');
+  const [currentDate, setCurrentDate] = useState('');
+  const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
+    // Initialize current date string
     const today = new Date().toLocaleDateString();
     setCurrentDate(today);
 
@@ -34,11 +37,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         if (storedGoal !== null) {
           const goalLiters = parseFloat(storedGoal);
+          const goalInMl = Math.round(goalLiters * 1000);
           setDailyGoal(goalLiters);
 
-          const goalInMl = goalLiters * 1000;
-
           if (storedDate !== todayDate) {
+            // Reset intake data for new day
             await AsyncStorage.setItem('lastTrackedDate', todayDate);
             await AsyncStorage.setItem('currentIntake', '0');
             await AsyncStorage.setItem('remainingWater', goalInMl.toString());
@@ -47,17 +50,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             setRemainingWater(goalInMl);
             progressBarWidth.setValue(0);
           } else {
+            // Load existing intake data for today
             const storedIntake = await AsyncStorage.getItem('currentIntake');
             const intake = storedIntake ? parseFloat(storedIntake) : 0;
 
-            const storedRemaining = await AsyncStorage.getItem('remainingWater');
-            const remaining = storedRemaining
-              ? parseFloat(storedRemaining)
-              : goalInMl - intake;
+            const remaining = Math.max(0, goalInMl - intake);
 
             setCurrentIntake(intake);
             setRemainingWater(remaining);
 
+            // Set progress bar accordingly
             const progressPercent = (intake / goalInMl) * 100;
             progressBarWidth.setValue(progressPercent);
           }
@@ -65,21 +67,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           setDailyGoal(null);
         }
       } catch (error) {
-        console.error('Failed to load daily goal or intake', error);
+        console.error('Failed to load data:', error);
       }
     };
 
     loadData();
 
+    // Countdown timer for time left to midnight
     const countdownInterval = setInterval(() => {
       const now = new Date();
       const midnight = new Date();
       midnight.setHours(24, 0, 0, 0);
       const diff = midnight.getTime() - now.getTime();
 
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const hours = Math.floor(diff / MS_IN_HOUR);
+      const minutes = Math.floor((diff % MS_IN_HOUR) / MS_IN_MINUTE);
+      const seconds = Math.floor((diff % MS_IN_MINUTE) / 1000);
 
       setTimeLeft(
         `${hours.toString().padStart(2, '0')}h ${minutes
@@ -89,17 +92,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }, 1000);
 
     return () => clearInterval(countdownInterval);
-  }, []);
+  }, [progressBarWidth]);
 
   const handleDrinkWater = (amount: number) => {
-  if (dailyGoal !== null) {
-    const goalInMl = dailyGoal * 1000;
+    if (dailyGoal === null) return;
+
+    const goalInMl = Math.round(dailyGoal);
     let newIntake = currentIntake + amount;
 
+    if (newIntake > goalInMl) newIntake = goalInMl;
+
+    const newRemaining = Math.max(0, goalInMl - newIntake);
+
     setCurrentIntake(newIntake);
-    const newRemaining = goalInMl - newIntake;
-    const safeRemaining = newRemaining >= 0 ? newRemaining : 0;
-    setRemainingWater(safeRemaining);
+    setRemainingWater(newRemaining);
 
     Animated.timing(progressBarWidth, {
       toValue: (newIntake / goalInMl) * 100,
@@ -107,28 +113,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       useNativeDriver: false,
     }).start();
 
-    AsyncStorage.setItem('currentIntake', newIntake.toString()).catch((error) =>
-      console.error('Failed to save current intake', error)
-    );
-    AsyncStorage.setItem('remainingWater', safeRemaining.toString()).catch((error) =>
-      console.error('Failed to save remaining water', error)
-    );
-  }
-};
+    AsyncStorage.setItem('currentIntake', newIntake.toString()).catch(console.error);
+    AsyncStorage.setItem('remainingWater', newRemaining.toString()).catch(console.error);
+  };
 
   const getMotivationalMessage = () => {
     if (dailyGoal === null) return '';
-    if (currentIntake >= dailyGoal * 1000) {
-      return "🎉 Congrats! You've reached your daily goal! Keep hydrating!";
-    } else if (currentIntake > dailyGoal * 1000 * 0.75) {
-      return "💧 Almost there! You're doing great, just a little more!";
-    } else if (currentIntake > dailyGoal * 1000 * 0.5) {
-      return "💪 You're halfway there! Keep going!";
-    } else if (currentIntake > dailyGoal * 1000 * 0.25) {
-      return "🧑‍💼 Keep it up! You're making progress!";
-    } else {
-      return "🌟 Start strong! Hydrate and feel energized!";
-    }
+    const goalInMl = dailyGoal;
+    if (currentIntake >= goalInMl) return "🎉 Congrats! You've reached your daily goal!";
+    if (currentIntake >= goalInMl * 0.75) return "💧 Almost there! Just a bit more!";
+    if (currentIntake >= goalInMl * 0.5) return "💪 You're halfway there!";
+    if (currentIntake >= goalInMl * 0.25) return "🧑‍💼 Good start! Keep going!";
+    return "🌟 Stay hydrated and energized!";
   };
 
   return (
@@ -139,6 +135,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     >
       <View style={styles.container}>
         <Text style={styles.dateText}>{currentDate}</Text>
+
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Water Reminder</Text>
         </View>
@@ -199,7 +196,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         )}
 
-        {/* Countdown Timer */}
         <View style={styles.countdownContainer}>
           <Text style={styles.countdownText}>{timeLeft}</Text>
         </View>
@@ -220,7 +216,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     width: '100%',
-    height: '100%',
   },
   titleContainer: {
     marginTop: 40,
@@ -239,12 +234,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#0288D1',
-    textAlign: 'right',
   },
   motivationalText: {
     fontSize: 20,
-    fontWeight: '500',
     fontStyle: 'italic',
+    fontWeight: '500',
     color: '#4CAF50',
     textAlign: 'center',
     marginBottom: 30,

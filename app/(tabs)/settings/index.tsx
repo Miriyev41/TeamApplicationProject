@@ -43,7 +43,7 @@ export default function SettingsIndex() {
             <Text style={[styles.label, { color: colors.text }]}>My Profile</Text>
           </View>
           <Text style={[styles.goal, { color: colors.text }]}>
-            Goal: {dailyGoal !== null ? `${dailyGoal} L` : 'Loading...'}
+            Goal: {dailyGoal !== null ? `${dailyGoal} mL` : 'Loading...'}
           </Text>
         </TouchableOpacity>
 

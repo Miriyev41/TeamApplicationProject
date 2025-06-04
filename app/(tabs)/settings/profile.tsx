@@ -1,11 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 
 const ProfileScreen = () => {
   const [weight, setWeight] = useState<string>('');
-  const [activityLevel, setActivityLevel] = useState<'Sedentary' | 'Light Activity' | 'Moderately Active' | 'Very Active' | 'Extremely Active'>('Sedentary');
+  const [activityLevel, setActivityLevel] = useState<
+    'Sedentary' | 'Light Activity' | 'Moderately Active' | 'Very Active' | 'Extremely Active'
+  >('Sedentary');
   const [climate, setClimate] = useState<'Tropical' | 'Temperate' | 'Cold'>('Temperate');
   const [dailyGoal, setDailyGoal] = useState<number | null>(null);
 
@@ -14,10 +23,10 @@ const ProfileScreen = () => {
       try {
         const storedGoal = await AsyncStorage.getItem('dailyGoal');
         if (storedGoal) {
-          setDailyGoal(parseFloat(storedGoal));
+          setDailyGoal(parseInt(storedGoal));
         }
       } catch (e) {
-        console.error('Failed to load daily goal');
+        console.error('Failed to load daily goal', e);
       }
     };
 
@@ -37,7 +46,6 @@ const ProfileScreen = () => {
     }
 
     const baseMlPerKg = 35;
-
     let intakeMl = weightInKg * baseMlPerKg;
 
     const activityMultipliers: Record<string, number> = {
@@ -56,20 +64,19 @@ const ProfileScreen = () => {
     };
     intakeMl *= climateMultipliers[climate];
 
-    const intakeLiters = +(intakeMl / 1000).toFixed(2);
-
-    setDailyGoal(intakeLiters);
+    const intakeRoundedMl = Math.round(intakeMl);
+    setDailyGoal(intakeRoundedMl);
 
     try {
-      await AsyncStorage.setItem('dailyGoal', intakeLiters.toString());
-      Alert.alert('Goal Saved', `Daily water goal: ${intakeLiters} L`);
+      await AsyncStorage.setItem('dailyGoal', intakeRoundedMl.toString());
+      Alert.alert('Goal Saved', `Daily water goal: ${intakeRoundedMl} mL`);
     } catch (e) {
       Alert.alert('Error', 'Failed to save daily goal.');
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Set Your Profile</Text>
 
       <TextInput
@@ -84,9 +91,7 @@ const ProfileScreen = () => {
       <Picker
         selectedValue={activityLevel}
         style={styles.picker}
-        onValueChange={(itemValue) =>
-          setActivityLevel(itemValue as typeof activityLevel)
-        }
+        onValueChange={(itemValue) => setActivityLevel(itemValue as typeof activityLevel)}
       >
         <Picker.Item label="Sedentary" value="Sedentary" />
         <Picker.Item label="Light Activity" value="Light Activity" />
@@ -111,9 +116,7 @@ const ProfileScreen = () => {
       </TouchableOpacity>
 
       {dailyGoal !== null && (
-        <Text style={styles.result}>
-          Daily Water Goal: {dailyGoal} L
-        </Text>
+        <Text style={styles.result}>💧 Daily Water Goal: {dailyGoal} mL</Text>
       )}
     </ScrollView>
   );
@@ -124,53 +127,61 @@ export default ProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e0f7fa',
+    backgroundColor: '#E0F7FA',
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#00796b',
+    color: '#00796B',
   },
   input: {
     height: 50,
-    borderColor: '#00796b',
-    borderWidth: 2,
+    borderColor: '#00796B',
+    borderWidth: 1.5,
     borderRadius: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     marginBottom: 20,
     paddingHorizontal: 15,
+    fontSize: 16,
   },
   label: {
     fontSize: 18,
-    marginBottom: 10,
-    color: '#00796b',
+    marginBottom: 5,
+    marginTop: 10,
+    color: '#00796B',
   },
   picker: {
     height: 50,
     width: '100%',
-    backgroundColor: '#ffffff',
-    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+    marginBottom: 15,
+    borderRadius: 10,
   },
   button: {
-    backgroundColor: '#00796b',
-    paddingVertical: 12,
+    backgroundColor: '#00796B',
+    paddingVertical: 15,
     borderRadius: 25,
     marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
   buttonText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 18,
     textAlign: 'center',
     fontWeight: 'bold',
   },
   result: {
-    marginTop: 20,
+    marginTop: 25,
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#004d40',
+    color: '#004D40',
     textAlign: 'center',
   },
 });
